@@ -1,7 +1,7 @@
 import { APPS, URLS } from '../constants/enums';
 import { _ as t } from "../utils/translate";
 import { router, useNavigation, useRootNavigationState } from 'expo-router'; 
-import { Alert, ToastAndroid } from 'react-native';
+import { Alert, Platform } from 'react-native';
 import * as Random from 'randomstring';   
 // import { NavigationActions } from 'react-navigation';
 import { CommonActions, DrawerActions } from '@react-navigation/native';
@@ -139,40 +139,14 @@ const APP = class AppUtil {
         buttons,
         options
     ); 
- 
-    /*
-    const dlg = Dialog.create({
-      title: title,
-      message: message,
-      color: is_error ? 'negative' : 'primary',
-      //class: 'bg-negative',
-      html: true,
-      ok: this.translate('BUTTON.OK'),
-      cancel: is_confirm ? AppUtil.translate('BUTTON.CANCEL') : null,
-    })
-      .onOk(() => {
-        if(on_ok) {
-          on_ok();
-        }
-      })
-      .onCancel(() => {
-        if(on_cancel) {
-          on_cancel();
-        }
-      })
-      .onDismiss(() => {
-        if(on_dismiss) {
-          on_dismiss();
-        }
-      });*/
-    }
+  }
+
   /**
    * Show a notification popup
    * @param message 
    * @param position 
    * @param timeout 
    */
-
   static alert = (message: string, is_error: boolean = false, position: | "top-left"
   | "top-right"
   | "bottom-left"
@@ -183,16 +157,6 @@ const APP = class AppUtil {
   | "right"
   | "center" = 'top', timeout=3000) => {    
     this.show_message(message, '');
-    // Notify.create({
-    //   color: is_error ? 'negative' : 'secondary',
-    //   //textColor: 'white',
-    //   icon: 'info',
-    //   message,
-    //   position,
-    //   avatar: 'info',
-    //   multiLine: true, 
-    //   timeout: timeout, // Math.random() * 5000 + 3000
-    // })
   }
 
   static notify = (message: string, is_error: boolean = false, position: | "top-left"
@@ -204,14 +168,20 @@ const APP = class AppUtil {
   | "left"
   | "right"
   | "center" = 'top', timeout=3000) => {    
-    // this.alert(message, false, position);
-    ToastAndroid.showWithGravityAndOffset(
-      message,
-      ToastAndroid.LONG,
-      ToastAndroid.CENTER,
-      25,
-      100,
-    );
+    if (Platform.OS === 'android') {
+      // Use ToastAndroid only on Android platform
+      const ToastAndroid = require('react-native').ToastAndroid;
+      ToastAndroid.showWithGravityAndOffset(
+        message,
+        ToastAndroid.LONG,
+        ToastAndroid.CENTER,
+        25,
+        100,
+      );
+    } else {
+      // Use alert for other platforms
+      this.alert(message, is_error, position);
+    }
   }
 
   /**
@@ -229,11 +199,10 @@ const APP = class AppUtil {
   | "left"
   | "right"
   | "center" = 'bottom', timeout=3000) => {
-    // this.notify(message, true, position); 
     this.show_error(message);
   }
 
-    /**
+  /**
    * Show error notification
    * @param message 
    * @param position 
@@ -248,18 +217,8 @@ const APP = class AppUtil {
     | "left"
     | "right"
     | "center" = 'bottom', timeout=3000) => {
-      // this.notify(message, true, position); 
       this.show_error(message);
     }
-
-  // /**
-  //  * Displays an unobtrusive message in form of a snack bar
-  //  * @param message 
-  //  */
-  // static notify = (message: string) => {
-  //   return (<AppSnackbar message={message} />)
-  // }
-
 
   /**
    * Show loading icon
@@ -300,9 +259,6 @@ const APP = class AppUtil {
    */
   static navigate_to_path = (navigation: object, url: string, params: object = {}, query_string: string = '') => { 
     const clone_params = { ...params }
-    // clone['navigation'] = navigation;
-    // clone['_t'] = this.generate_random_string(16);  
-    // navigation.navigate(url, clone_params); 
     navigation.reset({
       index: 0,
       routes: [
@@ -312,8 +268,6 @@ const APP = class AppUtil {
         },
       ],
     })
-    // const obj = { path: url, params: clone_params, key: APP.generate_random_string() }
-    // CommonActions.navigate(obj);
   }
 
   static route_to_path = (
@@ -321,24 +275,7 @@ const APP = class AppUtil {
     params: object = {},
     query: object = {}
   ) => {  
-    // const rootNavigationState = useRootNavigationState(); 
-
-    // if (!rootNavigationState?.key) return null;
- 
-    // params['t'] = this.generate_random_string(5);
-    // router.replace(path)
     router.push(path)
-
-    // router.push({
-    //     pathname: path, 
-    //     params: params,
-    //     // query
-    //   })
-
-          // .then(() => {
-          //   router.go(0)
-          // });
-    //router.push({path: path, params: params, query: queryString })
   };
 
   static route_to_name = (
